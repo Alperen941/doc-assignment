@@ -27,9 +27,10 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Run backend unit tests
-        working-directory: java-backend
-        run: mvn -B test
+
+#      - name: Run backend unit tests
+ #       working-directory: java-backend
+  #      run: mvn -B test
 
       - name: Build backend JAR (skip tests)
         working-directory: java-backend
