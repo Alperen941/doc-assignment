@@ -1,0 +1,33 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [ "CI" ]     # kør, når CI gik igennem
+    types: [ completed ]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted     # runneren på din dev-PC
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Kube context (forvent at kubectl allerede virker)
+        run: kubectl cluster-info
+
+      # (valgfrit) Skift image-tag i manifests til SHA,
+      # her bruges 'latest' fordi vi kører imagePullPolicy: Never
+      #- name: Patch image tags
+      #  run: |
+      #    kubectl set image deployment/java-backend   java-backend=$REGISTRY/$IMAGE_NS/java-backend:latest
+      #    kubectl set image deployment/react-frontend react-frontend=$REGISTRY/$IMAGE_NS/react-frontend:latest
+
+      - name: Apply k8s manifests
+        run: kubectl apply -f k8s/
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deploy/java-backend   --timeout=120s
+          kubectl rollout status deploy/react-frontend --timeout=120s
