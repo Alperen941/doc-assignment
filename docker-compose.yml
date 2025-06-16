@@ -1,29 +1,52 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  backend:
-    build: .
-    container_name: java-backend
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/testdb
-      SPRING_DATASOURCE_USERNAME: testuser
-      SPRING_DATASOURCE_PASSWORD: testpass
-    depends_on:
-      - db
 
-  db:
-    image: postgres:latest
-    container_name: postgres-db
+  postgres-db:
+    image: postgres:16
     environment:
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: testdb
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
       - "5433:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
-volumes:
-  postgres-data:
+
+  backend:
+    build: ./java-backend
+    container_name: java-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/mydb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      - postgres-db
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./my-react-app
+    container_name: my-react-app
+    working_dir: /app
+    command: npm run dev
+    volumes:
+      - ./my-react-app:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
+
