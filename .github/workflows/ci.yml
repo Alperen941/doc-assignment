@@ -70,8 +70,8 @@ jobs:
       - name: Build & push frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./react-frontend
+          context: ./my-react-app
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NS }}/react-frontend:${{ env.TAG_LATEST }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NS }}/react-frontend:${{ env.TAG_SHA }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NS }}/my-react-app:${{ env.TAG_LATEST }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NS }}/my-react-app:${{ env.TAG_SHA }}
           push: true
