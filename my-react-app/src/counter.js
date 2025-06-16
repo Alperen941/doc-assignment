@@ -1,37 +1,27 @@
-export function setupCounter(element) {
+export async function setupCounter(element) {
   let counter = 0;
+  const setCounter = (c) => { counter = c; element.innerHTML = `count is ${c}` }
 
-  const setCounter = (count) => {
-    counter = count;
-    element.innerHTML = `count is ${counter}`;
-  }
-
-  element.addEventListener('click', () => setCounter(counter + 1));
-  setCounter(0);
-
-  // 🟡 Load tekst fra backend
-  fetch('http://localhost:8080')
-    .then(res => res.text())
-    .then(text => {
-      document.getElementById('backend-text').innerText = text;
-    })
-    .catch(() => {
-      document.getElementById('backend-text').innerText = 'Failed to load backend message';
-    });
-
-  // 💾 Save-knap
-  document.getElementById('save-btn').addEventListener('click', () => {
-    fetch('http://localhost:8080/counter', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(counter)
-    });
-  });
-
-  // 🔄 Load-knap
-  document.getElementById('load-btn').addEventListener('click', async () => {
-    const res = await fetch('http://localhost:8080/counter');
+  /* ───── Load initial value from backend ───── */
+  try {
+    const res  = await fetch(`${import.meta.env.VITE_API_BASE_URL}/counter`);
     const data = await res.json();
     setCounter(data);
-  });
+    document.getElementById('backend-text').innerText = 'Backend OK ✔';
+  } catch {
+    document.getElementById('backend-text').innerText = 'Failed to load backend message';
+  }
+
+  /* ───── save / load buttons ───── */
+  document.getElementById('save-btn').onclick = () =>
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/counter`, {
+        method : 'PUT',
+        headers: { 'Content-Type':'application/json' },
+        body   : JSON.stringify(counter)
+      });
+
+  document.getElementById('load-btn').onclick = async () => {
+    const r = await fetch(`${import.meta.env.VITE_API_BASE_URL}/counter`);
+    setCounter(await r.json());
+  };
 }

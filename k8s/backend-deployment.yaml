@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: java-backend }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: backend } }
+  template:
+    metadata: { labels: { app: backend } }
+    spec:
+      containers:
+        - name: java-backend
+          image: alperen941/java-backend:latest   # ← push this image first
+          env:
+            - { name: SPRING_DATASOURCE_URL,      value: "jdbc:postgresql://postgres-service:5432/mydb" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "user" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "password" }
+          ports: [ { containerPort: 8080 } ]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: backend-service }
+spec:
+  selector: { app: backend }
+  ports: [ { port: 8080, targetPort: 8080 } ]
+  type: ClusterIP

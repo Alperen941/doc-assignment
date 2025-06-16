@@ -1,26 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:
-  name: postgres-db
+metadata: { name: postgres-db }
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: postgres-db
+  selector: { matchLabels: { app: postgres } }
   template:
-    metadata:
-      labels:
-        app: postgres-db
+    metadata: { labels: { app: postgres } }
     spec:
       containers:
         - name: postgres
-          image: postgres:15
-          ports:
-            - containerPort: 5432
+          image: postgres:16
           env:
-            - name: POSTGRES_USER
-              value: testuser
-            - name: POSTGRES_PASSWORD
-              value: testpass
-            - name: POSTGRES_DB
-              value: testdb
+            - { name: POSTGRES_DB,        value: "mydb" }
+            - { name: POSTGRES_USER,      value: "user" }
+            - { name: POSTGRES_PASSWORD,  value: "password" }
+          ports: [ { containerPort: 5432 } ]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: postgres-service }
+spec:
+  selector: { app: postgres }
+  ports:    [ { port: 5432, targetPort: 5432 } ]
+  clusterIP: None   # headless → simplifies DB URL
